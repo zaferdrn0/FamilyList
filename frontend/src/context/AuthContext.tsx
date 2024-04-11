@@ -49,7 +49,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await response.json();
       if (data.isLoggedIn) {
         setCurrentUser({ userId: data.userId });
-        router.push("/dashboard")
+        if (isAuthPage(router.pathname)) {
+                  router.push('/dashboard');
+                } 
       } else {
         await router.push("/login")
       }
@@ -64,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }else {
       checkAuth();
     }
-  }, [router.pathname]);
+  }, []);
 
   const login = async (username: string, password: string) => {
     const loginData = {
