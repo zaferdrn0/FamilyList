@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
 const GroupSchema = new mongoose.Schema({
   name: {
@@ -7,7 +8,7 @@ const GroupSchema = new mongoose.Schema({
     unique: true
   },
   users: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'users'
   }]
 });

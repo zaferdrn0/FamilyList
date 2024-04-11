@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import 'dotenv/config';
 import session from 'express-session';
+import WebSocket, { WebSocketServer } from 'ws';
 import MongoStore from 'connect-mongo';
 import { User } from './models/user.js';
+import { Data, DataPriority, DataType } from './models/data.js';
 const app = express();
 const port = process.env.PORT;
 
@@ -24,6 +26,88 @@ app.use(session({
 mongoose.connect(process.env.MONGODB_ADDRESS)
   .then(() => console.log('Successfully connect Mongo DB'))
   .catch(err => console.error('MongoDB connect error:', err));
+
+const server = app.listen(4001, () => {
+  console.log(`Server is running on port 4001`);
+});
+
+const wss = new WebSocketServer({ noServer: true });
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
+  
+  app.post('/api/add-data', async (req, res) => {
+    try {
+      const newData = new Data(
+        {
+         name: req.body.name,
+         assignedUsers: req.body.assignedUsers,
+         dataType: req.body.type,
+         dataPriority: req.body.priority
+        })
+        
+      await newData.save()
+      const populatedData = await Data.findById(newData._id)
+      .populate('dataType', 'name')
+      .populate('dataPriority', 'name');
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(populatedData));
+        }
+      });
+  
+      res.json(populatedData);
+    } catch (error) {
+      console.error('Error saving data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/get-data', async (req, res) => {
+    try {
+      const data = await Data.find()
+        .populate('dataType')
+        .populate('dataPriority');
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/api/delete-data', async (req, res) =>{
+    try {
+      const data = await Data.findByIdAndDelete(req.body.id);
+      res.json(data);
+    } catch (error) { 
+      console.error('Error deleting data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
+  
+  app.get('/api/get-data-priority', async (req, res) => {
+    try {
+      const data = await DataPriority.find(); // Tüm verileri çek
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    } 
+  });
+
+  app.get('/api/get-data-type', async (req, res) => { 
+    try {
+      const data = await DataType.find(); // Tüm verileri çek
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    } 
+  });
 
   app.post('/api/user-register', async (req, res) => {
     try {
