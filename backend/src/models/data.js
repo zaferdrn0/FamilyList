@@ -6,7 +6,7 @@ const dataTypeSchema = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true    
+        unique: true
     },
 });
 
@@ -14,11 +14,10 @@ const dataPrioritySchema = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true    
+        unique: true
     },
 });
 
-// dataType ve dataPriority için Mongoose modellerini tanımlayın
 const DataType = mongoose.model('DataType', dataTypeSchema);
 const DataPriority = mongoose.model('DataPriority', dataPrioritySchema);
 
@@ -29,21 +28,22 @@ const dataSchema = new Schema({
     },
     assignedUsers: [{
         type: Schema.Types.ObjectId,
-        ref: 'User', // 'users' koleksiyonunu referans alır
+        ref: 'User',
         required: false
     }],
     dataType: {
         type: Schema.Types.ObjectId,
-        ref: 'DataType', // 'DataType' modelini referans alır
+        ref: 'DataType',
         required: false
     },
     dataPriority: {
         type: Schema.Types.ObjectId,
-        ref: 'DataPriority', // 'DataPriority' modelini referans alır
+        ref: 'DataPriority',
         required: false
-    }
+    },
+
 }, {
-    timestamps: true // createdAt ve updatedAt alanlarını otomatik olarak ekler
+    timestamps: true
 });
 
 const Data = mongoose.model('Data', dataSchema);

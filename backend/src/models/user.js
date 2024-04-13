@@ -1,6 +1,25 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+const inviteSchema = new mongoose.Schema({
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'groups',
+    required: true
+  },
+  invitedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'users',
+    required: true
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending'
+  }
+}, { timestamps: true });
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -14,9 +33,9 @@ const userSchema = new mongoose.Schema({
   groups: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'groups'
-  }]
+  }],
+  invites: [inviteSchema]
 });
-
 // Pre-save hook to hash the password
 userSchema.pre('save', async function(next) {
   // Only hash the password if it has been modified (or is new)

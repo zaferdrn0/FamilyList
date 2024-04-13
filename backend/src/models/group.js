@@ -5,11 +5,14 @@ const GroupSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true
   },
   users: [{
     type: Schema.Types.ObjectId,
     ref: 'users'
+  }],
+  data: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Data'
   }]
 });
 
