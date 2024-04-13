@@ -1,26 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { fetchBackendDELETE, fetchBackendGET, fetchBackendPOST } from '@/utils/backendFetch'; // fetchBackendPOST'un yolu projenize göre değişebilir
-import { Data, DataPriorities, DataTypes } from '@/models/dataType';
+import { Box, Button, Grid } from '@mui/material';
+import { fetchBackendGET } from '@/utils/backendFetch';
+import { Data } from '@/models/dataType';
+import { useRouter } from 'next/router';
+import InviteUsers from '@/components/user/InviteUsers';
+import AddData from '@/components/data/AddData';
+import ListData from '@/components/data/ListData';
 
 const Group = () => {
-    const [text, setText] = useState<string>("");
+    const router = useRouter()
     const [data, setData] = useState<Data[]>([]);
-    const [dataType, setDataType] = useState<DataTypes[]>([]);
-    const [dataPriority, setDataPriority] = useState<DataPriorities[]>([]);
-    const [selectedPriority, setSelectedPriority] = useState<string>("");
-    const [selectedType, setSelectedType] = useState<string>("");
+    const [inviteUserModalOpen, setInviteUserModalOpen] = useState<boolean>(false);
+    const [groupInformation,setGroupInformation] = useState<any | undefined>()
+    const { group_id } = router.query;
 
-    // WebSocket bağlantısını başlatma
     useEffect(() => {
         const ws = new WebSocket('ws://localhost:4001');
 
         ws.onopen = () => {
             console.log('WebSocket connected');
-            // Veritabanından mevcut verileri çekme
-            getData();
-            getDataType()
-            getDataPriority()
+            GetGroupInformation();
         };
 
         ws.onmessage = (event) => {
@@ -33,94 +32,31 @@ const Group = () => {
         };
     }, []);
 
-    const getData = async () => {
-        const response = await fetchBackendGET("/get-data");
+    const GetGroupInformation = async () => {
+        const response = await fetchBackendGET(`/group/information/${group_id}`)
         if (response.ok) {
-            const data = await response.json();
-            setData(data);
-            console.log(data)
-        }
-    };
-
-    const getDataType = async () => {
-        const response = await fetchBackendGET("/get-data-type");
-        if (response.ok) {
-            const data = await response.json();
-            setDataType(data);
+            const data = await response.json()
+            setGroupInformation(data);
+            setData(data.data)
         }
     }
-    const getDataPriority = async () => {
-        const response = await fetchBackendGET("/get-data-priority");
-        if (response.ok) {
-            const data = await response.json();
-            setDataPriority(data);
-        }
-    }
-
-    const addData = async () => {
-        await fetchBackendPOST('/add-data', { name: text,type:selectedType,priority:selectedPriority,assignedUsers:[] });
-    };
-
-    const selectPriority = (event: SelectChangeEvent) => {
-        setSelectedPriority(event.target.value as string);
-      };
-      const selectType = (event: SelectChangeEvent) => {
-        setSelectedType(event.target.value as string);
-      };
-
-      const deleteData = async (id:string) => {
-        const response = await fetchBackendDELETE("/delete-data",{id:id});
-        if (response.ok) {
-            const data = await response.json();
-            setData((prevData) => prevData.filter((item) => item._id!== data._id));
-            console.log(data)   
-        }
-      };
 
     return (
         <Grid container spacing={2} direction="column">
+            <Box>
+                <InviteUsers group_id={group_id as string} setInviteUserModalOpen={setInviteUserModalOpen} inviteUserModalOpen={inviteUserModalOpen} groupInformation={groupInformation} />
+            </Box>
             <Grid item lg={12}>
-                <TextField onChange={(e) => setText(e.target.value)} label={"data"} />
-                <FormControl fullWidth>
-                    <InputLabel>Priority</InputLabel>
-                    <Select
-                        value={selectedPriority}
-                        label="Priority"
-                        onChange={selectPriority}
-                    >
-                        {dataPriority.map((value, index) =>{
-                            return <MenuItem key={index} value={value._id}>{value.name}</MenuItem>
-                        })}
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                        value={selectedType}
-                        label="Type"
-                        onChange={selectType}
-                    >
-                        {dataType.map((value, index) =>{
-                            return <MenuItem key={index} value={value._id}>{value.name}</MenuItem>
-                        })}
-                    </Select>
-                </FormControl>
-                <Button variant="contained" onClick={addData}>Add Data</Button>
+                <Button onClick={() => router.push("/dashboard")}>Back To Dashboard</Button>
+                <Button onClick={() => setInviteUserModalOpen(true)}>Invite User</Button>
             </Grid>
-            <Grid item>
-                <div>
-                    {data.map((item, index) => (
-                        <Box key={index} sx={{display:"flex",alignItems:"center",justifyContent:"space-around"}}>
-                            <Typography> {item.name}</Typography>
-                            <Typography> {item.dataType.name}</Typography>
-                            <Typography> {item.dataPriority.name}</Typography>
-                            <Typography> {item.assignedUsers}</Typography>
-                            <Button variant="contained" onClick={() => deleteData(item._id)}>Delete</Button>
-                        </Box>
-                        
-                    ))}
-                </div>
+            <Grid>
+                <AddData group_id={group_id as string} />
             </Grid>
+            <Grid>
+                <ListData data={data} setData={setData} />
+            </Grid>
+
         </Grid>
     );
 };

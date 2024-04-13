@@ -9,8 +9,26 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+interface invites {
+  createdAt:string;
+  groupId:{
+    name:string;
+    _id:string;
+  };
+  invitedBy:{
+    username:string;
+    _id:string;
+  };
+  status:string;
+  updatedAt:string;
+  _id:string;
+}
+
 interface User {
-  userId: string;
+  _id: string;
+  username: string;
+  groups: string[];
+  invites: invites[];
 }
 
 interface AuthProviderProps {
@@ -43,12 +61,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return authPages.includes(pathname);
   };
 
+  const GetCurrentUser = async ()=>{
+    const response = await fetchBackendGET('/user/current');
+    if(response.ok){
+      const data = await response.json()
+      setCurrentUser(data)
+    }else{
+      setCurrentUser(null)
+    }
+  }
+
   const checkAuth = async () => {
     try {
-      const response = await fetchBackendGET('/check-auth');
+      const response = await fetchBackendGET('/user/check-auth');
       const data = await response.json();
       if (data.isLoggedIn) {
-        setCurrentUser({ userId: data.userId });
+        GetCurrentUser()
+
         if (isAuthPage(router.pathname)) {
                   router.push('/dashboard');
                 } 
@@ -68,21 +97,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  useEffect(()=>{
+    if(router.pathname === "/login"){
+      setCurrentUser(null)
+    }
+  }, [router.pathname]);
+
   const login = async (username: string, password: string) => {
     const loginData = {
         username:username,
         password:password
     }
-    const response = await fetchBackendPOST('/user-login',loginData)
+    const response = await fetchBackendPOST('/user/login',loginData)
     const data = await response.json();
     if (data.session && response.ok) {
-      setCurrentUser({ userId: data.session.userId });
+      GetCurrentUser()
       router.push("/dashboard")
     }
   };
 
   const logout = async () => {
-   const response = await fetchBackendGET('/logout');
+   const response = await fetchBackendGET('/user/logout');
    if(response.ok){
     setCurrentUser(null);
    }

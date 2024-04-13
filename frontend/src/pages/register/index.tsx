@@ -1,6 +1,6 @@
 import { fetchBackendPOST } from '@/utils/backendFetch'
 import { Button, Grid, TextField } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 const Register = () => {
   const [username,setUsername] = useState<string>("")
@@ -14,7 +14,7 @@ const Register = () => {
     }
 
     // Post user data to backend
-    const register = await fetchBackendPOST("/user-register",userData)
+    const register = await fetchBackendPOST("/user/register",userData)
     if(register.ok){
         
        const data = await register.json()
