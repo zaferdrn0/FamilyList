@@ -8,6 +8,10 @@ export interface DataPriorities {
     _id:string,
     name:string
 }
+export interface AssignedUsers {
+    _id:string,
+    username:string
+}
 
 
 export interface Data{
@@ -15,5 +19,7 @@ export interface Data{
     name:string,
     dataType:DataTypes,
     dataPriority:DataPriorities,
-    assignedUsers:string[]
+    assignedUsers:AssignedUsers[],
+    placeToBuy:string,
+    status:string
 }

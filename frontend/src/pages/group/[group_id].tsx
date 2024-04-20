@@ -12,6 +12,7 @@ const Group = () => {
     const [data, setData] = useState<Data[]>([]);
     const [inviteUserModalOpen, setInviteUserModalOpen] = useState<boolean>(false);
     const [groupInformation,setGroupInformation] = useState<any | undefined>()
+    const [users, setUsers] = useState<any[]>([])
     const { group_id } = router.query;
 
     useEffect(() => {
@@ -20,6 +21,7 @@ const Group = () => {
         ws.onopen = () => {
             console.log('WebSocket connected');
             GetGroupInformation();
+            GetUsers()
         };
 
         ws.onmessage = (event) => {
@@ -40,18 +42,26 @@ const Group = () => {
             setData(data.data)
         }
     }
+    const GetUsers = async () => {
+        const response = await fetchBackendGET("/user/list");
+        if (response.ok) {
+            const data = await response.json();
+            setUsers(data)
+        }
+    }
+
 
     return (
         <Grid container spacing={2} direction="column">
             <Box>
-                <InviteUsers group_id={group_id as string} setInviteUserModalOpen={setInviteUserModalOpen} inviteUserModalOpen={inviteUserModalOpen} groupInformation={groupInformation} />
+                <InviteUsers group_id={group_id as string} setInviteUserModalOpen={setInviteUserModalOpen} inviteUserModalOpen={inviteUserModalOpen} groupInformation={groupInformation} users={users}/>
             </Box>
             <Grid item lg={12}>
                 <Button onClick={() => router.push("/dashboard")}>Back To Dashboard</Button>
                 <Button onClick={() => setInviteUserModalOpen(true)}>Invite User</Button>
             </Grid>
             <Grid>
-                <AddData group_id={group_id as string} />
+                <AddData group_id={group_id as string} users={users} />
             </Grid>
             <Grid>
                 <ListData data={data} setData={setData} />

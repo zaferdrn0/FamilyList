@@ -9,7 +9,7 @@ interface ListDataProps {
 }
 
 const ListData: React.FC<ListDataProps> = ({ data, setData }) => {
-
+console.log(data)
     const deleteData = async (id: string) => {
         const response = await fetchBackendDELETE("/data/delete", { id: id });
         if (response.ok) {
@@ -26,7 +26,11 @@ const ListData: React.FC<ListDataProps> = ({ data, setData }) => {
                         <Typography> {item.name}</Typography>
                         <Typography> {item.dataType.name}</Typography>
                         <Typography> {item.dataPriority.name}</Typography>
-                        <Typography> {item.assignedUsers}</Typography>
+                        <Typography> {item.placeToBuy}</Typography>
+                        {item.assignedUsers.map((user,index) =>(
+                            <Typography key={index}> {user.username}</Typography>
+                        ))}
+                        <Typography>{item.status}</Typography>
                         <Button variant="contained" onClick={() => deleteData(item._id)}>Delete</Button>
                     </Box>
 
