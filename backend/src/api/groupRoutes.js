@@ -42,6 +42,7 @@ router.get('/information/:group_id', authenticate, async (req, res) => {
         populate: [
           { path: 'dataType', select: 'name' },
           { path: 'dataPriority', select: 'name' },
+          { path: 'assignedUsers', select: 'username' }
         ]
       });
 

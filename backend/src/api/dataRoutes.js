@@ -9,13 +9,16 @@ const router = express.Router();
 
 router.post('/add', authenticate, async (req, res) => {
   try {
-    const { name, assignedUsers, dataType, dataPriority, groupId } = req.body;
+    const { name, assignedUsers, dataType, dataPriority, groupId,placeToBuy,quantity } = req.body;
 
     const newData = new Data({
       name: name,
       assignedUsers: assignedUsers,
       dataType: dataType,
-      dataPriority: dataPriority
+      dataPriority: dataPriority,
+      status:"pending",
+      placeToBuy: placeToBuy,
+      quantity: quantity,
     });
 
     await newData.save();
@@ -29,7 +32,8 @@ router.post('/add', authenticate, async (req, res) => {
 
     const populatedData = await Data.findById(newData._id)
       .populate('dataType', 'name')
-      .populate('dataPriority', 'name');
+      .populate('dataPriority', 'name')
+      .populate('assignedUsers', 'username');
 
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {

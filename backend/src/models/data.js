@@ -17,6 +17,16 @@ const dataPrioritySchema = new Schema({
         unique: true
     },
 });
+const quantitySchema = new Schema({
+    value: {
+        type: Number,
+        required: true,
+    },
+    unit: {
+        type: String,
+        required: true,
+    },
+});
 
 const DataType = mongoose.model('DataType', dataTypeSchema);
 const DataPriority = mongoose.model('DataPriority', dataPrioritySchema);
@@ -28,7 +38,7 @@ const dataSchema = new Schema({
     },
     assignedUsers: [{
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'users',
         required: false
     }],
     dataType: {
@@ -40,6 +50,19 @@ const dataSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'DataPriority',
         required: false
+    },
+    status: {
+        type: String,
+        enum: ['active', 'pending', 'canceled', 'done'],
+        required: true,
+    },
+    placeToBuy: {
+        type: String,
+        required: false
+    },
+    quantity: {
+        type: quantitySchema,
+        required: false,
     },
 
 }, {

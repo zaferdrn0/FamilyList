@@ -13,6 +13,10 @@ const GroupSchema = new mongoose.Schema({
   data: [{
     type: Schema.Types.ObjectId,
     ref: 'Data'
+  }],
+  invitedUsers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'users'
   }]
 });
 

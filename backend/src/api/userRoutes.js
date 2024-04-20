@@ -135,6 +135,9 @@ router.post('/invite-group', authenticate, async (req, res) => {
       }, { new: true })
     );
     await Promise.all(invitePromises);
+    await Group.findByIdAndUpdate(groupId, {
+      $push: { invitedUsers: { $each: users } }
+    });
     res.status(200).json({ message: 'Invites sent successfully.' });
   } catch (error) {
     console.error('Error sending invites:', error);
@@ -181,7 +184,7 @@ router.post('/invite-group-reply', authenticate, async (req, res) => {
     } else {
       return res.status(400).json({ error: 'Invalid reply' });
     }
-
+    await Group.findByIdAndUpdate(groupId, { $pull: { invitedUsers: userId } });
     await user.save(); // Update the user
     res.status(200).json({ message: 'Reply processed successfully.' });
   } catch (error) {
